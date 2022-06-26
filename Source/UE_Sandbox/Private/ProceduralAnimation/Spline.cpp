@@ -1,6 +1,4 @@
-#include "Spline/Spline.h"
-
-#include "ToolContextInterfaces.h"
+#include "ProceduralAnimation/Spline.h"
 #include "Components/SplineComponent.h"
 #include "Components/SplineMeshComponent.h"
 
