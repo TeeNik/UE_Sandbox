@@ -1,10 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Spline.generated.h"
+
+class USplineComponent;
 
 UCLASS()
 class UE_SANDBOX_API ASpline : public AActor
@@ -17,6 +17,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+	virtual void OnConstruction(const FTransform& Transform) override;
 
 	UFUNCTION(CallInEditor)
 	void DrawCurve();
@@ -28,7 +29,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Curve, Meta = (MakeEditWidget = true))
 	FVector End;
 
+	UPROPERTY(EditAnywhere, Category = "Spline")
+	USplineComponent* SplineComponent;
+	UPROPERTY(EditDefaultsOnly, Category = "Spline")
+	UStaticMesh* StaticMesh;
+	UPROPERTY(EditDefaultsOnly, Category = "Spline")
+	UMaterialInterface* Material;
+	
 private:
-	FVector GetBezierLocation(FVector start, FVector control, FVector end, float t);
+	FVector GetBezierLocation(FVector start, FVector control, FVector end, float t) const;
 
 };
