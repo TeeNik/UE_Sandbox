@@ -15,6 +15,8 @@ class UE_SANDBOX_API ULegStepperComponent : public USceneComponent
 public:	
 	ULegStepperComponent();
 
+	FVector GetEndPoint() const;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -27,6 +29,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LegStepper", Meta = (MakeEditWidget = true))
 	FVector HomeTransform;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LegStepper", Meta = (MakeEditWidget = true))
+	FVector StartEndPoint;
+
+private:
 	FVector EndPoint;
 
 };

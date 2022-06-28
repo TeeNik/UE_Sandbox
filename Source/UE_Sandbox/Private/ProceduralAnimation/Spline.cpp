@@ -48,10 +48,6 @@ void ASpline::OnConstruction(const FTransform& Transform)
 		current = worldPoint;
 	}
 
-	//points.Add(FVector(0,0,0));
-	//points.Add(FVector(500,0,500));
-	//points.Add(FVector(1000,0,0));
-
 	SplineComponent->SetSplinePoints(points, ESplineCoordinateSpace::Local, true);
 	const int splinePoints = SplineComponent->GetNumberOfSplinePoints();
 	UE_LOG(LogTemp, Log, TEXT("DrawCurve %d"), splinePoints);
