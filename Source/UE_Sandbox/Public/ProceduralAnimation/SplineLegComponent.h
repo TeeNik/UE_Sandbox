@@ -1,11 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
 #include "SplineLegComponent.generated.h"
 
+DECLARE_DE
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class UE_SANDBOX_API USplineLegComponent : public USceneComponent
@@ -14,6 +13,12 @@ class UE_SANDBOX_API USplineLegComponent : public USceneComponent
 
 public:	
 	USplineLegComponent();
+
+	void SetActive(bool IsActive);
+	bool IsLegShouldHide() const;
+	void PlayReachAnimation();
+	void PlayHideAnimation();
+
 
 protected:
 	virtual void BeginPlay() override;
@@ -26,9 +31,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Curve, Meta = (MakeEditWidget = true))
 	FVector End;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spline", Meta = (MakeEditWidget = true))
-	float StartScale = 1.0f;
+	float StartScale = 0.1f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spline", Meta = (MakeEditWidget = true))
-	float EndScale = 1.0f;
+	float EndScale = 0.025f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spline", Meta = (MakeEditWidget = true))
 	float MeshScale = 0.05f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spline", Meta = (MakeEditWidget = true))
@@ -52,5 +57,10 @@ private:
 	float LegAnimationProgress = 1.0f;
 	void PlayLegAnimation(float DeltaTime);
 	bool IsLegHiding = false;
+
+	bool IsLegShouldHide = false;
+
+	bool IsActive = false;
+
 
 };

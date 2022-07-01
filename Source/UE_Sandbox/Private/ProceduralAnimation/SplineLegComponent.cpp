@@ -8,6 +8,36 @@ USplineLegComponent::USplineLegComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	SplineComponent = CreateDefaultSubobject<USplineComponent>(TEXT("Spline"));
+	LegStepper = CreateDefaultSubobject<ULegStepperComponent>(TEXT("LegStepper"));
+
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMeshObj(TEXT("/Game/Creature/cylinder.cylinder"));
+	StaticMesh = StaticMeshObj.Object;
+}
+
+void USplineLegComponent::SetActive(bool InIsActive)
+{
+	IsActive = InIsActive;
+	if (IsActive)
+	{
+		PlayReachAnimation();
+	}
+	else
+	{
+		PlayHideAnimation();
+	}
+}
+
+bool USplineLegComponent::IsLegShouldHide() const
+{
+	return false;
+}
+
+void USplineLegComponent::PlayReachAnimation()
+{
+}
+
+void USplineLegComponent::PlayHideAnimation()
+{
 }
 
 void USplineLegComponent::BeginPlay()
@@ -25,10 +55,6 @@ void USplineLegComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 		End = LegStepper->GetEndPoint();
 		ConstructSpline();
-	}
-	else
-	{
-		LegStepper = Cast<ULegStepperComponent>(GetOwner()->GetComponentByClass(ULegStepperComponent::StaticClass()));
 	}
 }
 
@@ -80,7 +106,7 @@ void USplineLegComponent::ConstructSpline()
 
 	SplineComponent->SetSplinePoints(points, ESplineCoordinateSpace::Local, true);
 	const int splinePoints = SplineComponent->GetNumberOfSplinePoints();
-	//UE_LOG(LogTemp, Log, TEXT("DrawCurve %d"), splinePoints);
+	UE_LOG(LogTemp, Log, TEXT("DrawCurve %d"), splinePoints);
 
 	for (int i = 0; i < splinePoints - 1; ++i)
 	{
@@ -99,9 +125,16 @@ void USplineLegComponent::ConstructSpline()
 		const FVector endPoint = SplineComponent->GetLocationAtSplinePoint(i + 1, ESplineCoordinateSpace::Local);
 		const FVector endTangent = SplineComponent->GetTangentAtSplinePoint(i + 1, ESplineCoordinateSpace::Local);
 
+		const float startScale = FMath::Lerp(EndScale, StartScale, (splinePoints - i) / (float)splinePoints);
+		const float endScale = FMath::Lerp(EndScale, StartScale, (splinePoints - (i + 1)) / (float)splinePoints);
+
+		//const float startScale = StartScale * (splinePoints - i);
+		//const float endScale = EndScale * (splinePoints - (i + 1));
+
+
 		splineMesh->SetStartAndEnd(startPoint, startTangent, endPoint, endTangent);
-		splineMesh->SetStartScale(FVector2d(MeshScale, MeshScale));
-		splineMesh->SetEndScale(FVector2d(MeshScale, MeshScale));
+		splineMesh->SetStartScale(FVector2D(startScale, startScale));
+		splineMesh->SetEndScale(FVector2D(endScale, endScale));
 		SplineMeshes.Add(splineMesh);
 	}
 }
