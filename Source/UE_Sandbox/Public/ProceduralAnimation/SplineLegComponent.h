@@ -4,8 +4,6 @@
 #include "Components/SceneComponent.h"
 #include "SplineLegComponent.generated.h"
 
-DECLARE_DE
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class UE_SANDBOX_API USplineLegComponent : public USceneComponent
 {
@@ -14,7 +12,9 @@ class UE_SANDBOX_API USplineLegComponent : public USceneComponent
 public:	
 	USplineLegComponent();
 
-	void SetActive(bool IsActive);
+	void SetIsLegActive(bool InIsLegActive);
+	FORCEINLINE bool GetIsLegActive() { return IsLegActive; }
+	bool GetIsPlayingHideAnimation();
 	bool IsLegShouldHide() const;
 	void PlayReachAnimation();
 	void PlayHideAnimation();
@@ -54,13 +54,11 @@ private:
 	UPROPERTY()
 	class USplineComponent* SplineComponent;
 
-	float LegAnimationProgress = 1.0f;
+	float LegAnimationProgress = 0.0f;
 	void PlayLegAnimation(float DeltaTime);
-	bool IsLegHiding = false;
 
-	bool IsLegShouldHide = false;
+	bool IsPlayingHideAnimation = false;
+	bool IsPlayingReachAnimation = false;
 
-	bool IsActive = false;
-
-
+	bool IsLegActive = false;
 };

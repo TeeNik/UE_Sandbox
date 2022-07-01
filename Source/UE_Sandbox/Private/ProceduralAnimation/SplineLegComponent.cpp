@@ -14,11 +14,12 @@ USplineLegComponent::USplineLegComponent()
 	StaticMesh = StaticMeshObj.Object;
 }
 
-void USplineLegComponent::SetActive(bool InIsActive)
+void USplineLegComponent::SetIsLegActive(bool InIsLegActive)
 {
-	IsActive = InIsActive;
-	if (IsActive)
+	IsLegActive = InIsLegActive;
+	if (IsLegActive)
 	{
+		LegStepper->GetNewPoint();
 		PlayReachAnimation();
 	}
 	else
@@ -27,17 +28,26 @@ void USplineLegComponent::SetActive(bool InIsActive)
 	}
 }
 
+bool USplineLegComponent::GetIsPlayingHideAnimation()
+{
+	return IsPlayingHideAnimation;
+}
+
 bool USplineLegComponent::IsLegShouldHide() const
 {
-	return false;
+	return LegStepper->GetIsFarFromPoint();
 }
 
 void USplineLegComponent::PlayReachAnimation()
 {
+	LegAnimationProgress = 0.0f;
+	IsPlayingReachAnimation = true;
 }
 
 void USplineLegComponent::PlayHideAnimation()
 {
+	LegAnimationProgress = 1.0f;
+	IsPlayingHideAnimation = true;
 }
 
 void USplineLegComponent::BeginPlay()
@@ -48,14 +58,10 @@ void USplineLegComponent::BeginPlay()
 void USplineLegComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	if (IsValid(LegStepper))
-	{
-		PlayLegAnimation(DeltaTime);
-
-		End = LegStepper->GetEndPoint();
-		ConstructSpline();
-	}
+	
+	PlayLegAnimation(DeltaTime);
+	End = LegStepper->GetEndPoint();
+	ConstructSpline();
 }
 
 FVector USplineLegComponent::GetBezierLocation(FVector start, FVector control, FVector end, float t) const
@@ -78,6 +84,11 @@ void USplineLegComponent::ConstructSpline()
 			}
 		}
 		SplineMeshes.Empty();
+	}
+
+	if (!IsLegActive && !IsPlayingHideAnimation)
+	{
+		return;
 	}
 
 	FVector current = GetOwner()->GetActorLocation();
@@ -106,7 +117,6 @@ void USplineLegComponent::ConstructSpline()
 
 	SplineComponent->SetSplinePoints(points, ESplineCoordinateSpace::Local, true);
 	const int splinePoints = SplineComponent->GetNumberOfSplinePoints();
-	UE_LOG(LogTemp, Log, TEXT("DrawCurve %d"), splinePoints);
 
 	for (int i = 0; i < splinePoints - 1; ++i)
 	{
@@ -131,7 +141,6 @@ void USplineLegComponent::ConstructSpline()
 		//const float startScale = StartScale * (splinePoints - i);
 		//const float endScale = EndScale * (splinePoints - (i + 1));
 
-
 		splineMesh->SetStartAndEnd(startPoint, startTangent, endPoint, endTangent);
 		splineMesh->SetStartScale(FVector2D(startScale, startScale));
 		splineMesh->SetEndScale(FVector2D(endScale, endScale));
@@ -141,18 +150,24 @@ void USplineLegComponent::ConstructSpline()
 
 void USplineLegComponent::PlayLegAnimation(float DeltaTime)
 {
+	float value = 0.0f;
 
-	//float value = DeltaTime * 0.5;
-	//if (IsLegHiding)
-	//{
-	//	value *= -1;
-	//}
-	//LegAnimationProgress += value;
-	//if (LegAnimationProgress > 1 || LegAnimationProgress < 0)
-	//{
-	//	IsLegHiding = !IsLegHiding;
-	//}
-	//LegAnimationProgress = FMath::Clamp(LegAnimationProgress, 0, 1);
+	if (IsPlayingReachAnimation)
+	{
+		value = DeltaTime;
+	}
+	else if (IsPlayingHideAnimation)
+	{
+		value = -DeltaTime;
+	}
+
+	LegAnimationProgress += value;
+	if (LegAnimationProgress > 1 || LegAnimationProgress < 0)
+	{
+		IsPlayingReachAnimation = false;
+		IsPlayingHideAnimation = false;
+	}
+	LegAnimationProgress = FMath::Clamp(LegAnimationProgress, 0, 1);
 
 }
 
