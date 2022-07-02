@@ -18,9 +18,9 @@ protected:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(EditDefaultsOnly, Category = "LegController")
-	int32 NumOfLegs = 2;
+	int32 NumOfLegs = 8;
 	UPROPERTY(EditDefaultsOnly, Category = "LegController")
-	int32 NumOfActiveLegs = 1;
+	int32 NumOfActiveLegs = 4;
 	UPROPERTY(EditDefaultsOnly, Category = "LegController")
 	float MinRadius = 200.0f;
 	UPROPERTY(EditDefaultsOnly, Category = "LegController")
@@ -29,7 +29,4 @@ protected:
 private:
 	UPROPERTY()
 	TArray<class USplineLegComponent*> Legs;
-
-	FVector GetRandomPointInRadius() const;
-	float time = 0;
 };
