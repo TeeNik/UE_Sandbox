@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -17,6 +15,9 @@ public:
 
 	FVector GetEndPoint() const;
 
+	void GetNewPoint();
+	bool GetIsFarFromPoint() const;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -33,5 +34,8 @@ protected:
 
 private:
 	FVector EndPoint;
+	FVector GetRandomPointInRadius() const;
+
+	bool IsFarFromPoint = false;
 
 };
