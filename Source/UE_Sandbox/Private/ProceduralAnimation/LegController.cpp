@@ -7,7 +7,7 @@ ULegController::ULegController()
 
 	for (int i = 0; i < NumOfLegs; ++i)
 	{
-		FName name(TEXT("Leg%d"), i);
+		FName name(FString("Leg_") +  FString::FromInt(i));
 		USplineLegComponent* leg = CreateDefaultSubobject<USplineLegComponent>(name);
 		Legs.Add(leg);
 	}
@@ -17,9 +17,14 @@ void ULegController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	for (int i = 0; i < NumOfActiveLegs; ++i)
+	float angle = 0.0f;
+	float anglePeriod = 360.0f / (NumOfLegs / 2);
+
+	for (int i = 0; i < NumOfLegs; i += 2)
 	{
-		Legs[i]->SetIsLegActive(true);
+		//Legs[i]->SetIsLegActive(true);
+		Legs[i]->Init(angle, angle + anglePeriod);
+		angle += anglePeriod;
 	}
 }
 
@@ -27,29 +32,26 @@ void ULegController::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	int32 numOfLegsToActivate = 0;
+	for (int i = 0; i < NumOfLegs; ++i)
+	{
+		USplineLegComponent* leg = Legs[i];
+		if(leg->GetIsLegActive() && leg->IsLegShouldHide())
+	}
+
 	for (USplineLegComponent* leg : Legs)
 	{
 		if (leg->GetIsLegActive() && leg->IsLegShouldHide())
 		{
-			++numOfLegsToActivate;
+
 			leg->SetIsLegActive(false);
 		}
 	}
+}
 
-	if (numOfLegsToActivate > 0)
-	{
-		for (USplineLegComponent* leg : Legs)
-		{
-			if (!leg->GetIsLegActive() && !leg->GetIsPlayingHideAnimation())
-			{
-				--numOfLegsToActivate;
-				leg->SetIsLegActive(true);
-
-				if (numOfLegsToActivate == 0) {
-					break;
-				}
-			}
-		}
-	}
+USplineLegComponent* ULegController::GetLegPair(int32 index)
+{
+	if (index % 2 == 0)
+		return Legs[index + 1];
+	else
+		return Legs[index - 1];
 }
