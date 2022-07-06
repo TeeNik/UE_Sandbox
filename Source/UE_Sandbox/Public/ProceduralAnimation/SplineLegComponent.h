@@ -12,13 +12,11 @@ class UE_SANDBOX_API USplineLegComponent : public USceneComponent
 public:	
 	USplineLegComponent();
 
+	void Init(float MinAngle, float MaxAngle);
 	void SetIsLegActive(bool InIsLegActive);
 	FORCEINLINE bool GetIsLegActive() { return IsLegActive; }
 	bool GetIsPlayingHideAnimation();
 	bool IsLegShouldHide() const;
-	void PlayReachAnimation();
-	void PlayHideAnimation();
-
 
 protected:
 	virtual void BeginPlay() override;
@@ -54,11 +52,13 @@ private:
 	UPROPERTY()
 	class USplineComponent* SplineComponent;
 
-	float LegAnimationProgress = 0.0f;
 	void PlayLegAnimation(float DeltaTime);
+	void PlayReachAnimation();
+	void PlayHideAnimation();
 
 	bool IsPlayingHideAnimation = false;
 	bool IsPlayingReachAnimation = false;
-
 	bool IsLegActive = false;
+	float LegAnimationProgress = 1.0f;
+
 };

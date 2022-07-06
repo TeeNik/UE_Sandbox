@@ -14,12 +14,18 @@ USplineLegComponent::USplineLegComponent()
 	StaticMesh = StaticMeshObj.Object;
 }
 
+void USplineLegComponent::Init(float MinAngle, float MaxAngle)
+{
+	IsLegActive = true;
+	LegStepper->TargetNewPoint(true, MinAngle, MaxAngle);
+}
+
 void USplineLegComponent::SetIsLegActive(bool InIsLegActive)
 {
 	IsLegActive = InIsLegActive;
 	if (IsLegActive)
 	{
-		LegStepper->GetNewPoint();
+		LegStepper->TargetNewPoint(true, 0, 360);
 		PlayReachAnimation();
 	}
 	else
@@ -60,7 +66,7 @@ void USplineLegComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	
 	PlayLegAnimation(DeltaTime);
-	End = LegStepper->GetEndPoint();
+	End = LegStepper->GetTargetPoint();
 	ConstructSpline();
 }
 

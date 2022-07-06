@@ -13,9 +13,10 @@ class UE_SANDBOX_API ULegStepperComponent : public USceneComponent
 public:	
 	ULegStepperComponent();
 
-	FVector GetEndPoint() const;
-
-	void GetNewPoint();
+	FVector GetTargetPoint() const;
+	void TargetNewPoint(bool UseOwnerLocation, float MinAngle, float MaxAngle);
+	void TargetNewPointInSegment(float MinAngle, float MaxAngle);
+	void TargetNewPointInFront(float MinAngle, float MaxAngle);
 	bool GetIsFarFromPoint() const;
 
 protected:
@@ -27,14 +28,20 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LegStepper")
 	float StepOvershootFraction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LegStepper")
+	float MinRadius = 100.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LegStepper")
+	float MaxRadius = 150.0f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LegStepper", Meta = (MakeEditWidget = true))
 	FVector HomeTransform;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LegStepper", Meta = (MakeEditWidget = true))
 	FVector StartEndPoint;
 
 private:
-	FVector EndPoint;
-	FVector GetRandomPointInRadius() const;
+	FVector TargetPoint;
+	FVector GetRandomPointInRadius(float MinAngle, float MaxAngle) const;
+	FVector RaycastPointOnFloor(const FVector& Point) const;
 
 	bool IsFarFromPoint = false;
 
