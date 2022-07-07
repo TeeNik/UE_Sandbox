@@ -15,6 +15,7 @@ class UE_SANDBOX_API ULegComponent : public UActorComponent
 
 public:	
 	ULegComponent();
+	void Init(float MinAngle, float MaxAngle);
 
 protected:
 	virtual void BeginPlay() override;
@@ -26,4 +27,7 @@ protected:
 	TArray<USplineLegComponent*> SplineLegs;
 	UPROPERTY()
 	ULegStepperComponent* LegStepper;
+
+private:
+	int32 ActiveLegIndex = 0;
 };

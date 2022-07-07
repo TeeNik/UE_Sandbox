@@ -12,11 +12,12 @@ class UE_SANDBOX_API USplineLegComponent : public USceneComponent
 public:	
 	USplineLegComponent();
 
-	void Init(float MinAngle, float MaxAngle);
 	void SetIsLegActive(bool InIsLegActive);
 	FORCEINLINE bool GetIsLegActive() { return IsLegActive; }
 	bool GetIsPlayingHideAnimation();
-	bool IsLegShouldHide() const;
+
+	void SetTargetLocation(const FVector& target);
+
 
 protected:
 	virtual void BeginPlay() override;
@@ -47,8 +48,6 @@ private:
 	void ConstructSpline();
 	UPROPERTY()
 	TArray<class USplineMeshComponent*> SplineMeshes;
-	UPROPERTY()
-	class ULegStepperComponent* LegStepper;
 	UPROPERTY()
 	class USplineComponent* SplineComponent;
 

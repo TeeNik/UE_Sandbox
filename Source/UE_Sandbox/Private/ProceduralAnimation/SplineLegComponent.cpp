@@ -8,16 +8,8 @@ USplineLegComponent::USplineLegComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	SplineComponent = CreateDefaultSubobject<USplineComponent>(TEXT("Spline"));
-	LegStepper = CreateDefaultSubobject<ULegStepperComponent>(TEXT("LegStepper"));
-
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMeshObj(TEXT("/Game/Creature/cylinder.cylinder"));
 	StaticMesh = StaticMeshObj.Object;
-}
-
-void USplineLegComponent::Init(float MinAngle, float MaxAngle)
-{
-	IsLegActive = true;
-	LegStepper->TargetNewPoint(true, MinAngle, MaxAngle);
 }
 
 void USplineLegComponent::SetIsLegActive(bool InIsLegActive)
@@ -25,7 +17,6 @@ void USplineLegComponent::SetIsLegActive(bool InIsLegActive)
 	IsLegActive = InIsLegActive;
 	if (IsLegActive)
 	{
-		LegStepper->TargetNewPoint(true, 0, 360);
 		PlayReachAnimation();
 	}
 	else
@@ -39,9 +30,9 @@ bool USplineLegComponent::GetIsPlayingHideAnimation()
 	return IsPlayingHideAnimation;
 }
 
-bool USplineLegComponent::IsLegShouldHide() const
+void USplineLegComponent::SetTargetLocation(const FVector& target)
 {
-	return LegStepper->GetIsFarFromPoint();
+	End = target;
 }
 
 void USplineLegComponent::PlayReachAnimation()
@@ -66,7 +57,6 @@ void USplineLegComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	
 	PlayLegAnimation(DeltaTime);
-	End = LegStepper->GetTargetPoint();
 	ConstructSpline();
 }
 
@@ -101,10 +91,6 @@ void USplineLegComponent::ConstructSpline()
 	const int NumOfPoint = 10;
 	const FTransform transform = GetOwner()->GetActorTransform();
 
-	//const FVector start = transform.TransformPosition(Start);
-	//const FVector control = transform.TransformPosition(Control);
-	//const FVector end = transform.TransformPosition(End);
-
 	const FVector start = transform.GetLocation();
 	const FVector end = End;
 	const FVector control = start + (end - start) / 2.0f + FVector::UpVector * ControlHeight;
@@ -117,7 +103,6 @@ void USplineLegComponent::ConstructSpline()
 		FVector worldPoint = GetBezierLocation(start, control, end, value);
 		FVector localPoint = GetBezierLocation(Start, Control, End, value);
 		points.Add(worldPoint);
-		//DrawDebugLine(GetWorld(), current, worldPoint, FColor::Blue, false, 20, 0, 2.5);
 		current = worldPoint;
 	}
 
@@ -156,6 +141,11 @@ void USplineLegComponent::ConstructSpline()
 
 void USplineLegComponent::PlayLegAnimation(float DeltaTime)
 {
+	if (!IsPlayingReachAnimation && !IsPlayingHideAnimation)
+	{
+		return;
+	}
+
 	float value = 0.0f;
 
 	if (IsPlayingReachAnimation)
