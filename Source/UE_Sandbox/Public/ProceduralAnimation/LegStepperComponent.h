@@ -13,10 +13,8 @@ class UE_SANDBOX_API ULegStepperComponent : public USceneComponent
 public:	
 	ULegStepperComponent();
 
-	FVector GetTargetPoint() const;
-	void TargetNewPoint(bool UseOwnerLocation, float MinAngle, float MaxAngle);
-	void TargetNewPointInSegment(float MinAngle, float MaxAngle);
-	void TargetNewPointInFront(float MinAngle, float MaxAngle);
+	FVector GetTargetLocation() const;
+	void UpdateTarget(bool UseOwnerLocation, float MinAngle, float MaxAngle);
 	bool GetIsFarFromPoint() const;
 
 protected:
