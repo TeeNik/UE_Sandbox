@@ -28,6 +28,8 @@ protected:
 	UPROPERTY()
 	ULegStepperComponent* LegStepper;
 
+	static bool PreviousLegSide;
+
 private:
 	int32 ActiveLegIndex = 0;
 };

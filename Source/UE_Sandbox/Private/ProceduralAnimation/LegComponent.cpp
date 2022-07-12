@@ -2,6 +2,8 @@
 #include "ProceduralAnimation/SplineLegComponent.h"
 #include "ProceduralAnimation/LegStepperComponent.h"
 
+bool ULegComponent::PreviousLegSide = false;
+
 ULegComponent::ULegComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -34,7 +36,11 @@ void ULegComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 
 	if (LegStepper->GetIsFarFromPoint())
 	{
-		LegStepper->UpdateTarget(true, -45, 45);
+		bool side = FMath::RandBool();
+		float minAngle = PreviousLegSide ? -45 : 30;
+		float maxAngle = PreviousLegSide ? -30 : 45;
+		PreviousLegSide = !PreviousLegSide;
+		LegStepper->UpdateTarget(true, minAngle, maxAngle);
 		FVector target = LegStepper->GetTargetLocation();
 		SplineLegs[ActiveLegIndex]->SetIsLegActive(false);
 		ActiveLegIndex = (ActiveLegIndex + 1) % 2;
