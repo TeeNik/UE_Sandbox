@@ -10,6 +10,11 @@ USplineLegComponent::USplineLegComponent()
 	SplineComponent = CreateDefaultSubobject<USplineComponent>(TEXT("Spline"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMeshObj(TEXT("/Game/Creature/cylinder.cylinder"));
 	StaticMesh = StaticMeshObj.Object;
+
+	for (int i = 0; i < NumOfPointsInSpline - 1; ++i)
+	{
+		PointOffsets.Add(FMath::RandRange(-5.0f, 5.0f));
+	}
 }
 
 void USplineLegComponent::SetIsLegActive(bool InIsLegActive)
@@ -37,6 +42,7 @@ void USplineLegComponent::SetTargetLocation(const FVector& target)
 
 void USplineLegComponent::PlayReachAnimation()
 {
+	LegIdleAnimation = 0.0f;
 	LegAnimationProgress = 0.0f;
 	IsPlayingReachAnimation = true;
 }
@@ -87,23 +93,28 @@ void USplineLegComponent::ConstructSpline()
 		return;
 	}
 
-	FVector current = GetOwner()->GetActorLocation();
-	const int NumOfPoint = 10;
 	const FTransform transform = GetOwner()->GetActorTransform();
 
 	const FVector start = transform.GetLocation();
 	const FVector end = End;
-	const FVector control = start + (end - start) / 2.0f + FVector::UpVector * ControlHeight;
+	FVector control = start + (end - start) / 2.0f + FVector::UpVector * ControlHeight;
+	//control += ControlOffset;
 
 	TArray<FVector> points;
 
-	for (int i = 0; i <= NumOfPoint; ++i)
+	for (int i = 0; i <= NumOfPointsInSpline; ++i)
 	{
-		float value = i / (float)NumOfPoint * LegAnimationProgress;
+		float value = i / (float)NumOfPointsInSpline * LegAnimationProgress;
 		FVector worldPoint = GetBezierLocation(start, control, end, value);
-		FVector localPoint = GetBezierLocation(Start, Control, End, value);
+
+		//if (i > 0 && i < NumOfPointsInSpline)
+		//{
+		//	float offsetValue = PointOffsets[i - 1];
+		//	FVector offset = FVector(0, offsetValue * FMath::Sin(LegIdleAnimation), offsetValue * FMath::Cos(LegIdleAnimation));
+		//	worldPoint += offset * FMath::FloorToFloat(LegAnimationProgress);
+		//}
+
 		points.Add(worldPoint);
-		current = worldPoint;
 	}
 
 	SplineComponent->SetSplinePoints(points, ESplineCoordinateSpace::Local, true);
@@ -141,6 +152,9 @@ void USplineLegComponent::ConstructSpline()
 
 void USplineLegComponent::PlayLegAnimation(float DeltaTime)
 {
+	LegIdleAnimation += DeltaTime;
+	ControlOffset = FVector(0, 10 * FMath::Sin(LegIdleAnimation), 10 * FMath::Cos(LegIdleAnimation));
+
 	if (!IsPlayingReachAnimation && !IsPlayingHideAnimation)
 	{
 		return;
@@ -157,7 +171,7 @@ void USplineLegComponent::PlayLegAnimation(float DeltaTime)
 		value = -DeltaTime;
 	}
 
-	LegAnimationProgress += value;
+	LegAnimationProgress += value * AnimationSpeed;
 	if (LegAnimationProgress > 1 || LegAnimationProgress < 0)
 	{
 		IsPlayingReachAnimation = false;

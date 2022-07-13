@@ -36,7 +36,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spline", Meta = (MakeEditWidget = true))
 	float MeshScale = 0.05f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spline", Meta = (MakeEditWidget = true))
-	float ControlHeight = 80.0f;
+	float ControlHeight = 120.0f;
+
+	UPROPERTY()
+	float AnimationSpeed = 3.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Spline")
 	UStaticMesh* StaticMesh;
@@ -46,10 +49,15 @@ protected:
 private:	
 	FVector GetBezierLocation(FVector start, FVector control, FVector end, float t) const;
 	void ConstructSpline();
-	UPROPERTY()
+	UPROPERTY(Transient)
 	TArray<class USplineMeshComponent*> SplineMeshes;
-	UPROPERTY()
+	UPROPERTY(Transient)
 	class USplineComponent* SplineComponent;
+	UPROPERTY(Transient)
+	TArray<float> PointOffsets;
+	UPROPERTY()
+	int32 NumOfPointsInSpline = 2;
+
 
 	void PlayLegAnimation(float DeltaTime);
 	void PlayReachAnimation();
@@ -59,5 +67,8 @@ private:
 	bool IsPlayingReachAnimation = false;
 	bool IsLegActive = false;
 	float LegAnimationProgress = 1.0f;
+
+	float LegIdleAnimation = 0.0f;
+	FVector ControlOffset;
 
 };
