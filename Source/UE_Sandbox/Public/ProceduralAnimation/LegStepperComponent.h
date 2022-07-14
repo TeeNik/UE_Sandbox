@@ -27,9 +27,9 @@ protected:
 	float StepOvershootFraction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LegStepper")
-	float MinRadius = 100.0f;
+	float MinRadius;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LegStepper")
-	float MaxRadius = 150.0f;
+	float MaxRadius;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LegStepper", Meta = (MakeEditWidget = true))
 	FVector HomeTransform;
@@ -38,7 +38,6 @@ protected:
 
 private:
 	FVector TargetPoint;
-	FVector GetRandomPointInRadius(float MinAngle, float MaxAngle) const;
 	FVector RaycastPointOnFloor(const FVector& Point) const;
 
 	bool IsFarFromPoint = false;

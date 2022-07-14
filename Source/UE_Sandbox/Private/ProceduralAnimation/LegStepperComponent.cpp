@@ -6,10 +6,12 @@ ULegStepperComponent::ULegStepperComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
-	WantStepAtDistance = 300.0f;
+	WantStepAtDistance = 225.0f;
 	HomeTransform = FVector(0, 120, 0);
 	StartEndPoint = HomeTransform;
 	StepOvershootFraction = 0.5f;
+	MinRadius = 150.0f;
+	MaxRadius = 200.0f;
 }
 
 void ULegStepperComponent::BeginPlay()
@@ -48,18 +50,6 @@ void ULegStepperComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	}
 }
 
-FVector ULegStepperComponent::GetRandomPointInRadius(float MinAngle, float MaxAngle) const
-{
-	const float angle = FMath::RandRange(MinAngle, MaxAngle);
-	const FVector up = GetOwner()->GetActorUpVector();
-	FVector dir = GetOwner()->GetActorForwardVector();
-	dir = UKismetMathLibrary::RotateAngleAxis(dir, angle, up);
-	UE_LOG(LogTemp, Log, TEXT("GetRandomPointInRadius %f %s"), angle, *up.ToString());
-
-	const float radius = FMath::RandRange(MinRadius, MaxRadius);
-	return RaycastPointOnFloor(GetOwner()->GetActorLocation() + dir * radius);
-}
-
 FVector ULegStepperComponent::RaycastPointOnFloor(const FVector& Point) const
 {
 	FHitResult hit;
@@ -86,11 +76,11 @@ void ULegStepperComponent::UpdateTarget(bool UseOwnerLocation, float MinAngle, f
 	FVector dir = UKismetMathLibrary::RotateAngleAxis(GetOwner()->GetActorForwardVector(), angle, up);
 	dir.Normalize();
 	UE_LOG(LogTemp, Log, TEXT("TargetNewPoint %f %s"), angle, *dir.ToString());
-	const float radius = FMath::RandRange(WantStepAtDistance * .65f, WantStepAtDistance * .95f);
+	const float radius = FMath::RandRange(MinRadius, MaxRadius);
 	FVector point = origin + dir * radius;
 	TargetPoint = RaycastPointOnFloor(point);
 	IsFarFromPoint = false;
-	DrawDebugSphere(GetWorld(), TargetPoint, 5.0f, 12, FColor::Magenta, false, 30, 10, 2.5f);
+	//DrawDebugSphere(GetWorld(), TargetPoint, 5.0f, 12, FColor::Magenta, false, 30, 10, 2.5f);
 }
 
 bool ULegStepperComponent::GetIsFarFromPoint() const
