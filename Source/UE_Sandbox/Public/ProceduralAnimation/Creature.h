@@ -37,6 +37,16 @@ protected:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	float Speed = 5.0f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	float BaseHeight = 50.0f;
+
 	FVector RaycastForwardSurface();
+
+private:
+	FVector TargetPoint;
+	FRotator TargetRotation;
+
 	
 };

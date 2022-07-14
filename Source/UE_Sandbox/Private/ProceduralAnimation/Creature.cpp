@@ -81,12 +81,25 @@ void ACreature::MoveForward(float Value)
 
 		// get forward vector
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		AddMovementInput(Direction, Value);
+
+		const float speed = 5.0f;
+		FVector current = GetActorLocation();
+		FVector dir = TargetPoint - current;
+		dir.Normalize();
+
+		FRotator lookRot = UKismetMathLibrary::FindLookAtRotation(current, TargetPoint);
+
+		SetActorRotation(lookRot);
+		SetActorLocation(current + dir * Value * speed);
+
+		//AddMovementInput(Direction, Value);
 	}
 }
 
 void ACreature::MoveRight(float Value)
 {
+	return;
+
 	if ( (Controller != nullptr) && (Value != 0.0f) )
 	{
 		// find out which way is right
@@ -115,7 +128,7 @@ FVector ACreature::RaycastForwardSurface()
 	const float angle = 270.0f;
 	const float step = 15.0f;
 
-	const float RaycastHeight = 300.0f;
+	const float RaycastHeight = 150.0f;
 	const float RaycastForwardDist = 100.0f;
 
 	const FVector origin = GetActorLocation();
@@ -142,6 +155,9 @@ FVector ACreature::RaycastForwardSurface()
 		if (result)
 		{	
 			DrawDebugSphere(GetWorld(), hit.ImpactPoint, 5.0f, 12, FColor::Magenta, false, -1, 10, 2.5f);
+			
+			TargetPoint = hit.ImpactPoint + hit.ImpactNormal * BaseHeight;
+
 			return hit.ImpactPoint;
 		}
 	}
