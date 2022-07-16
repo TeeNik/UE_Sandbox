@@ -89,7 +89,7 @@ void ACreature::MoveForward(float Value)
 
 		FRotator lookRot = UKismetMathLibrary::FindLookAtRotation(current, TargetPoint);
 
-		SetActorRotation(lookRot);
+		SetActorRotation(TargetRotation);
 		SetActorLocation(current + dir * Value * speed);
 
 		//AddMovementInput(Direction, Value);
@@ -157,6 +157,11 @@ FVector ACreature::RaycastForwardSurface()
 			DrawDebugSphere(GetWorld(), hit.ImpactPoint, 5.0f, 12, FColor::Magenta, false, -1, 10, 2.5f);
 			
 			TargetPoint = hit.ImpactPoint + hit.ImpactNormal * BaseHeight;
+			
+			FVector newForward = FVector::CrossProduct(actorRight, hit.ImpactNormal);
+			TargetRotation = UKismetMathLibrary::MakeRotFromXZ(newForward, hit.ImpactNormal);
+
+			DrawDebugSphere(GetWorld(), TargetPoint, 5.0f, 12, FColor::Purple, false, -1, 10, 2.5f);
 
 			return hit.ImpactPoint;
 		}
