@@ -97,7 +97,8 @@ void USplineLegComponent::ConstructSpline()
 
 	const FVector start = transform.GetLocation();
 	const FVector end = End;
-	FVector control = start + (end - start) / 2.0f + FVector::UpVector * ControlHeight;
+	const FVector up = GetOwner()->GetActorUpVector();
+	FVector control = start + (end - start) / 2.0f + up * ControlHeight;
 	//control += ControlOffset;
 
 	TArray<FVector> points;

@@ -10,8 +10,8 @@ ULegStepperComponent::ULegStepperComponent()
 	HomeTransform = FVector(0, 120, 0);
 	StartEndPoint = HomeTransform;
 	StepOvershootFraction = 0.5f;
-	MinRadius = 150.0f;
-	MaxRadius = 200.0f;
+	MinRadius = 175.0f;
+	MaxRadius = 210.0f;
 }
 
 void ULegStepperComponent::BeginPlay()
@@ -27,9 +27,10 @@ void ULegStepperComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	{
 		const FTransform ownerTransfrom = GetOwner()->GetTransform();
 		const FVector worldHomePos = ownerTransfrom.GetLocation();
+		const FVector up = GetOwner()->GetActorUpVector();
 
-		const FVector homePos = FVector::VectorPlaneProject(worldHomePos, FVector::UpVector);
-		const FVector endPos = FVector::VectorPlaneProject(TargetPoint, FVector::UpVector);
+		const FVector homePos = FVector::VectorPlaneProject(worldHomePos, up);
+		const FVector endPos = FVector::VectorPlaneProject(TargetPoint, up);
 		FVector diff = endPos - homePos;
 
 		const float sqrDist = (diff).SquaredLength();
@@ -53,8 +54,9 @@ void ULegStepperComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 FVector ULegStepperComponent::RaycastPointOnFloor(const FVector& Point) const
 {
 	FHitResult hit;
-	FVector rayOrigin = Point + FVector::UpVector * 200.0f;
-	FVector rayEnd = rayOrigin - FVector::UpVector * 1000.0f;
+	FVector up = GetOwner()->GetActorUpVector();
+	FVector rayOrigin = Point + up * 200.0f;
+	FVector rayEnd = rayOrigin - up * 1000.0f;
 	bool result = GetWorld()->LineTraceSingleByChannel(hit, rayOrigin, rayEnd, ECollisionChannel::ECC_WorldStatic);
 	if (result)
 	{
