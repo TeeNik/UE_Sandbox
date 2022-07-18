@@ -42,7 +42,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float BaseHeight = 50.0f;
 
-	FVector RaycastForwardSurface();
+	FVector CheckForwardSurface();
+
+	FHitResult RaycastForwardSurface(float RaycastHeight, float RaycastForwardDist);
 
 private:
 	FVector TargetPoint;

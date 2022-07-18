@@ -54,7 +54,7 @@ void ACreature::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	RaycastForwardSurface();
+	CheckForwardSurface();
 }
 
 void ACreature::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -89,7 +89,9 @@ void ACreature::MoveForward(float Value)
 
 		FRotator lookRot = UKismetMathLibrary::FindLookAtRotation(current, TargetPoint);
 
-		SetActorRotation(TargetRotation);
+		FRotator newRot = FMath::Lerp(GetActorRotation(), TargetRotation, 0.1f);
+
+		SetActorRotation(newRot);
 		SetActorLocation(current + dir * Value * speed);
 
 		//AddMovementInput(Direction, Value);
@@ -123,13 +125,13 @@ void ACreature::LookUpAtRate(float Rate)
 	AddControllerPitchInput(Rate * TurnRateGamepad * GetWorld()->GetDeltaSeconds());
 }
 
-FVector ACreature::RaycastForwardSurface()
+FVector ACreature::CheckForwardSurface()
 {
 	const float angle = 270.0f;
 	const float step = 15.0f;
 
-	const float RaycastHeight = 150.0f;
-	const float RaycastForwardDist = 100.0f;
+	const float RaycastHeight = 100.0f;
+	const float RaycastForwardDist = 50.0f;
 
 	const FVector origin = GetActorLocation();
 	const FVector actorUp = GetActorUpVector();
@@ -168,4 +170,43 @@ FVector ACreature::RaycastForwardSurface()
 	}
 
 	return origin;
+}
+
+FHitResult ACreature::RaycastForwardSurface(float RaycastHeight, float RaycastForwardDist)
+{
+	const float angle = 270.0f;
+	const float step = 15.0f;
+
+	const FVector origin = GetActorLocation();
+	const FVector actorUp = GetActorUpVector();
+	const FVector actorForward = GetActorForwardVector();
+	const FVector actorRight = GetActorRightVector();
+
+	for (int i = 0; i <= angle / step; ++i)
+	{
+		FVector up = UKismetMathLibrary::RotateAngleAxis(actorUp, step * i, actorRight);
+		FVector upPos = origin + up * RaycastHeight;
+		FVector forward = UKismetMathLibrary::RotateAngleAxis(actorForward, step * i, actorRight);
+		FVector forwardPos = upPos + forward * RaycastForwardDist;
+
+		DrawDebugLine(GetWorld(), origin, upPos, FColor::Green, false, -1, 0, 2);
+		DrawDebugLine(GetWorld(), upPos, forwardPos, FColor::Green, false, -1, 0, 2);
+
+		FHitResult hit;
+		bool result = GetWorld()->LineTraceSingleByChannel(hit, upPos, forwardPos, ECollisionChannel::ECC_WorldStatic);
+		if (result)
+		{
+			DrawDebugSphere(GetWorld(), hit.ImpactPoint, 5.0f, 12, FColor::Magenta, false, -1, 10, 2.5f);
+
+			TargetPoint = hit.ImpactPoint + hit.ImpactNormal * BaseHeight;
+
+			FVector newForward = FVector::CrossProduct(actorRight, hit.ImpactNormal);
+			TargetRotation = UKismetMathLibrary::MakeRotFromXZ(newForward, hit.ImpactNormal);
+
+			DrawDebugSphere(GetWorld(), TargetPoint, 5.0f, 12, FColor::Purple, false, -1, 10, 2.5f);
+			return hit;
+		}
+	}
+
+	return FHitResult();
 }
