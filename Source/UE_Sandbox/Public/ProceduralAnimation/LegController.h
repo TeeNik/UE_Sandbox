@@ -19,14 +19,14 @@ protected:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(EditDefaultsOnly, Category = "LegController")
-	int32 NumOfLegs = 1;
+	int32 NumOfLegs = 5;
 	UPROPERTY(EditDefaultsOnly, Category = "LegController")
 	float MinRadius = 200.0f;
 	UPROPERTY(EditDefaultsOnly, Category = "LegController")
 	float MaxRadius = 500.0f;
 
 private:
-	UPROPERTY()
+	UPROPERTY(Transient)
 	TArray<ULegComponent*> Legs;
 	
 };

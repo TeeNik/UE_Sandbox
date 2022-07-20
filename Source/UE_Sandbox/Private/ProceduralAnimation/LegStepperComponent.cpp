@@ -6,12 +6,12 @@ ULegStepperComponent::ULegStepperComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
-	WantStepAtDistance = 225.0f;
+	WantStepAtDistance = 200.0f;
 	HomeTransform = FVector(0, 120, 0);
 	StartEndPoint = HomeTransform;
 	StepOvershootFraction = 0.5f;
 	MinRadius = 175.0f;
-	MaxRadius = 210.0f;
+	MaxRadius = 190.0f;
 }
 
 void ULegStepperComponent::BeginPlay()
@@ -31,7 +31,8 @@ void ULegStepperComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 
 		const FVector homePos = FVector::VectorPlaneProject(worldHomePos, up);
 		const FVector endPos = FVector::VectorPlaneProject(TargetPoint, up);
-		FVector diff = endPos - homePos;
+		//FVector diff = endPos - homePos;
+		FVector diff = TargetPoint - worldHomePos;
 
 		const float sqrDist = (diff).SquaredLength();
 		//diff.Normalize();

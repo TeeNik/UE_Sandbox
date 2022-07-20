@@ -37,8 +37,8 @@ void ULegComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 	if (LegStepper->GetIsFarFromPoint())
 	{
 		bool side = FMath::RandBool();
-		float minAngle = PreviousLegSide ? -45 : 30;
-		float maxAngle = PreviousLegSide ? -30 : 45;
+		float minAngle = PreviousLegSide ? -35 : 15;
+		float maxAngle = PreviousLegSide ? -15 : 35;
 		PreviousLegSide = !PreviousLegSide;
 		LegStepper->UpdateTarget(true, minAngle, maxAngle);
 		FVector target = LegStepper->GetTargetLocation();
