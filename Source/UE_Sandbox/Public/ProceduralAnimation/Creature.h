@@ -38,16 +38,31 @@ protected:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	float Speed = 5.0f;
+	float Speed = 200.0f;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float BaseHeight = 50.0f;
 
 	void CheckForwardSurface();
 	bool RaycastForwardSurface(float RaycastHeight, float RaycastForwardDist, FHitResult& OutHitResult);
 
+
+	void Trace();
+	void TraceMovement();
+	void CalculateMovement();
+	void Move(float DeltaTime);
+	FVector GetMovementDir() const;
+
 private:
 	FVector TargetPoint;
 	FRotator TargetRotation;
+	FVector Forward;
 
+	float MoveForwardValue;
+	float MoveRightValue;
+
+	FHitResult F1;
+	FHitResult F2;
+	FHitResult R;
+	bool TraceResult;
 	
 };
