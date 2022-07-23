@@ -48,13 +48,19 @@ ACreature::ACreature()
 void ACreature::BeginPlay()
 {
 	Super::BeginPlay();
+
+	TargetPoint = GetActorLocation();
 }
 
 void ACreature::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	CheckForwardSurface();
+	//CheckForwardSurface();
+
+	TraceMovement();
+	CalculateMovement();
+	Move(DeltaTime);
 }
 
 void ACreature::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -76,43 +82,42 @@ void ACreature::MoveForward(float Value)
 	if ((Controller != nullptr) && (Value != 0.0f))
 	{
 		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		// get forward vector
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-
-		const float speed = 5.0f;
-		FVector current = GetActorLocation();
-		FVector dir = TargetPoint - current;
-		dir.Normalize();
-
-		FRotator lookRot = UKismetMathLibrary::FindLookAtRotation(current, TargetPoint);
-
-		FRotator newRot = FMath::Lerp(GetActorRotation(), TargetRotation, 0.1f);
-
-		SetActorRotation(newRot);
-		SetActorLocation(current + dir * Value * speed);
-
+		//const FRotator Rotation = Controller->GetControlRotation();
+		//const FRotator YawRotation(0, Rotation.Yaw, 0);
+		//
+		//// get forward vector
+		//const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		//
+		//const float speed = 5.0f;
+		//FVector current = GetActorLocation();
+		//FVector dir = TargetPoint - current;
+		//dir.Normalize();
+		//
+		//FRotator lookRot = UKismetMathLibrary::FindLookAtRotation(current, TargetPoint);
+		//
+		//FRotator newRot = FMath::Lerp(GetActorRotation(), TargetRotation, 0.1f);
+		//
+		//SetActorRotation(newRot);
+		//SetActorLocation(current + Forward * Value * speed);
 		//AddMovementInput(Direction, Value);
 	}
+	MoveForwardValue = Value;
 }
 
 void ACreature::MoveRight(float Value)
 {
-	return;
-
 	if ( (Controller != nullptr) && (Value != 0.0f) )
 	{
 		// find out which way is right
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-	
-		// get right vector 
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		//const FRotator Rotation = Controller->GetControlRotation();
+		//const FRotator YawRotation(0, Rotation.Yaw, 0);
+		//
+		//// get right vector 
+		//const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		// add movement in that direction
-		AddMovementInput(Direction, Value);
+		//AddMovementInput(Direction, Value);
 	}
+	MoveRightValue = Value;
 }
 
 void ACreature::TurnAtRate(float Rate)
@@ -130,13 +135,31 @@ void ACreature::CheckForwardSurface()
 	FHitResult hit1;
 	RaycastForwardSurface(100, 50, hit1);
 	FHitResult hit2;
-	RaycastForwardSurface(100, 50, hit2);
+	RaycastForwardSurface(120, 50, hit2);
 
 	TargetPoint = hit1.ImpactPoint + hit1.ImpactNormal * BaseHeight;
 	FVector newForward = hit2.ImpactPoint - hit1.ImpactPoint;
-	TargetRotation = UKismetMathLibrary::MakeRotFromXZ(newForward, OutHitResult.ImpactNormal);
-			//FVector newForward = FVector::CrossProduct(actorRight, OutHitResult.ImpactNormal);
-			//TargetRotation = UKismetMathLibrary::MakeRotFromXZ(newForward, OutHitResult.ImpactNormal);
+	newForward.Normalize();
+	Forward = newForward;
+	TargetRotation = UKismetMathLibrary::MakeRotFromXZ(newForward, hit1.ImpactNormal);
+	//TargetRotation = UKismetMathLibrary::MakeRotFromX(newForward);
+	
+	FVector newUp = FVector::CrossProduct(newForward, GetActorRightVector());
+	//FVector newRight = FVector::CrossProduct(hit1.ImpactNormal, newForward);
+	FVector newRight = GetActorRightVector();
+
+	FVector origin = GetActorLocation();
+	DrawDebugLine(GetWorld(), origin, origin + newForward * 50,
+		FColor::Red, false, -1, 20, 2);
+	DrawDebugLine(GetWorld(), origin, origin + newUp * 50,
+		FColor::Blue, false, -1, 20, 2);
+	DrawDebugLine(GetWorld(), origin, origin + newRight * 50,
+		FColor::Green, false, -1, 20, 2);
+	//FVector newForward = FVector::CrossProduct(actorRight, OutHitResult.ImpactNormal);
+	//TargetRotation = UKismetMathLibrary::MakeRotFromXZ(newForward, OutHitResult.ImpactNormal);
+
+	TargetRotation = UKismetMathLibrary::MakeRotationFromAxes(newForward, 
+		newRight, newUp);
 
 }
 
@@ -175,4 +198,83 @@ bool ACreature::RaycastForwardSurface(float RaycastHeight, float RaycastForwardD
 	}
 
 	return false;
+}
+
+void ACreature::Trace()
+{
+}
+
+void ACreature::TraceMovement()
+{
+	TraceResult = false;
+	FHitResult hit;
+	const FVector origin = GetActorLocation();
+	const FVector actorForward = GetActorForwardVector();
+	const FVector actorRight = GetActorRightVector();
+	const FVector actorUp = GetActorUpVector();
+	const FVector moveDir = GetMovementDir();
+
+	FVector end = origin + moveDir * 1000 - actorUp * 500;
+
+	bool result = GetWorld()->LineTraceSingleByChannel(hit, origin, end, ECollisionChannel::ECC_WorldStatic);
+	if (!result)
+	{
+		return;
+	}
+
+	F1 = hit;
+	DrawDebugLine(GetWorld(), origin, end, FColor::Red, false, -1, 0, 2);
+
+	FVector end2 = origin + moveDir * 1100 - actorUp * 500;
+	bool result2 = GetWorld()->LineTraceSingleByChannel(hit, origin, end, ECollisionChannel::ECC_WorldStatic);
+	if (!result2)
+	{
+		return;
+	}
+	F2 = hit;
+	DrawDebugLine(GetWorld(), origin, end2, FColor::Red, false, -1, 0, 2);
+
+	FVector endRight = UKismetMathLibrary::RotateAngleAxis(moveDir, 90, actorUp);
+	FVector end3 = origin + moveDir * 1000 - actorUp * 500 + endRight * 100;
+	bool result3 = GetWorld()->LineTraceSingleByChannel(hit, origin, end, ECollisionChannel::ECC_WorldStatic);
+	if (!result3)
+	{
+		return;
+	}
+	R = hit;
+	DrawDebugLine(GetWorld(), origin, end3, FColor::Red, false, -1, 0, 2);
+	TraceResult = true;
+}
+
+void ACreature::CalculateMovement()
+{
+	if (TraceResult)
+	{
+		TargetPoint = F1.ImpactPoint + F1.ImpactNormal * BaseHeight;
+
+		FVector newForward = UKismetMathLibrary::GetDirectionUnitVector(F1.ImpactPoint, F2.ImpactPoint);
+		FVector newRight = UKismetMathLibrary::GetDirectionUnitVector(F1.ImpactPoint, R.ImpactPoint);
+		TargetRotation = UKismetMathLibrary::MakeRotationFromAxes(newForward, newRight, F1.ImpactNormal);
+
+	}
+}
+
+void ACreature::Move(float DeltaTime)
+{
+	const float moveValue = FMath::Abs(MoveForwardValue) + FMath::Abs(MoveRightValue);
+	const FVector origin = GetActorLocation();
+	const float dist = FVector::Distance(origin, TargetPoint);
+	if (moveValue > 0.0f && dist > 2.0f)
+	{
+		const FVector dir = UKismetMathLibrary::GetDirectionUnitVector(origin, TargetPoint);
+		
+		SetActorLocation(origin + dir * Speed * DeltaTime);
+	}
+}
+
+FVector ACreature::GetMovementDir() const
+{
+	FVector dir = GetActorForwardVector() * MoveForwardValue + GetActorRightVector() * MoveRightValue;
+	dir.Normalize();
+	return dir;
 }
