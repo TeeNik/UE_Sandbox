@@ -56,11 +56,12 @@ void ACreature::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	//CheckForwardSurface();
+	CheckForwardSurface();
+	UpdateHeight(DeltaTime);
 
-	TraceMovement();
-	CalculateMovement();
-	Move(DeltaTime);
+	//TraceMovement();
+	//CalculateMovement();
+	//Move(DeltaTime);
 }
 
 void ACreature::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -82,23 +83,21 @@ void ACreature::MoveForward(float Value)
 	if ((Controller != nullptr) && (Value != 0.0f))
 	{
 		// find out which way is forward
-		//const FRotator Rotation = Controller->GetControlRotation();
-		//const FRotator YawRotation(0, Rotation.Yaw, 0);
-		//
-		//// get forward vector
-		//const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		//
-		//const float speed = 5.0f;
-		//FVector current = GetActorLocation();
-		//FVector dir = TargetPoint - current;
-		//dir.Normalize();
-		//
-		//FRotator lookRot = UKismetMathLibrary::FindLookAtRotation(current, TargetPoint);
-		//
-		//FRotator newRot = FMath::Lerp(GetActorRotation(), TargetRotation, 0.1f);
-		//
-		//SetActorRotation(newRot);
-		//SetActorLocation(current + Forward * Value * speed);
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+		
+		// get forward vector
+		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		
+		const float speed = 5.0f;
+		FVector current = GetActorLocation();
+		FVector dir = TargetPoint - current;
+		dir.Normalize();
+		
+		FRotator newRot = FMath::Lerp(GetActorRotation(), TargetRotation, 0.1f);
+		
+		SetActorRotation(TargetRotation);
+		SetActorLocation(current + Forward * Value * speed);
 		//AddMovementInput(Direction, Value);
 	}
 	MoveForwardValue = Value;
@@ -200,8 +199,27 @@ bool ACreature::RaycastForwardSurface(float RaycastHeight, float RaycastForwardD
 	return false;
 }
 
-void ACreature::Trace()
+void ACreature::UpdateHeight(float DeltaTime)
 {
+	const FVector origin = GetActorLocation();
+	const FVector actorUp = GetActorUpVector();
+	FHitResult hit;
+	FVector end = origin - actorUp * 1000;
+	bool result = GetWorld()->LineTraceSingleByChannel(hit, origin, end, ECollisionChannel::ECC_WorldStatic);
+	if (result)
+	{
+		float height = FVector::Dist(origin, hit.ImpactPoint);
+		float diff = BaseHeight - height;
+		//if (diff > 5.0f)
+		{
+			FVector targetHeight = hit.ImpactPoint + actorUp * BaseHeight;
+			DrawDebugSphere(GetWorld(), targetHeight, 5.0f, 12,
+				FColor::Silver, false, -1, 10, 2.5f);
+			FVector newPos = FMath::Lerp(origin, targetHeight, 50.0f * DeltaTime);
+
+			SetActorLocation(targetHeight);
+		}
+	}
 }
 
 void ACreature::TraceMovement()
@@ -255,7 +273,7 @@ void ACreature::CalculateMovement()
 		FVector newForward = UKismetMathLibrary::GetDirectionUnitVector(F1.ImpactPoint, F2.ImpactPoint);
 		FVector newRight = UKismetMathLibrary::GetDirectionUnitVector(F1.ImpactPoint, R.ImpactPoint);
 		TargetRotation = UKismetMathLibrary::MakeRotationFromAxes(newForward, newRight, F1.ImpactNormal);
-
+		DrawDebugSphere(GetWorld(), TargetPoint, 5.0f, 12, FColor::Magenta, false, -1, 10, 2.5f);
 	}
 }
 
